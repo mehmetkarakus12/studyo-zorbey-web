@@ -73,20 +73,12 @@ export function MobileNav({ open, socialLinks, onClose }: MobileNavProps) {
       aria-hidden={!open}
     >
       <div
-        onClick={onClose}
-        className={cn(
-          "absolute inset-0 bg-secondary/50 backdrop-blur-sm transition-opacity duration-300",
-          open ? "opacity-100" : "opacity-0",
-        )}
-      />
-
-      <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Mobil navigasyon"
         className={cn(
-          "absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-surface px-6 pt-6 pb-8 shadow-2xl transition-transform duration-300 ease-out",
+          "absolute inset-x-0 top-0 flex h-dvh min-h-dvh w-full flex-col overflow-y-auto bg-white px-6 pt-6 pb-8 text-foreground shadow-2xl transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "translate-x-full",
         )}
       >
@@ -97,7 +89,7 @@ export function MobileNav({ open, socialLinks, onClose }: MobileNavProps) {
             type="button"
             onClick={onClose}
             aria-label="Menüyü kapat"
-            className="flex size-11 items-center justify-center text-foreground"
+            className="flex size-11 items-center justify-center text-foreground transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <X className="size-6" aria-hidden />
           </button>
@@ -109,7 +101,7 @@ export function MobileNav({ open, socialLinks, onClose }: MobileNavProps) {
               key={item.href}
               href={item.href}
               onClick={onClose}
-              className="border-b border-border py-4 font-display text-2xl text-foreground first:pt-0"
+              className="border-b border-border py-4 font-display text-2xl text-foreground transition-colors first:pt-0 hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {item.label}
             </Link>
