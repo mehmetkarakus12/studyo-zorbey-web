@@ -1,5 +1,9 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
+import { after } from "next/server";
+
 import { createClient } from "@/lib/supabase/server";
 import { parseContactMessageFormData, type ContactMessageFieldErrors } from "@/lib/public/contact-validation";
 import {
@@ -7,6 +11,7 @@ import {
   getRateLimitKey,
   isHoneypotTriggered,
 } from "@/lib/public/spam-protection";
+import { notifyNewContactMessage } from "@/lib/notifications/dispatch";
 
 export type ContactMessageActionState = {
   success?: boolean;
@@ -39,13 +44,27 @@ export async function createContactMessageAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("contact_messages").insert(values);
+  // `id`: bkz. randevu-al/actions.ts'deki aynı açıklama — public rolün
+  // SELECT izni olmadığı için baştan üretilir.
+  const id = randomUUID();
+  const { error } = await supabase.from("contact_messages").insert({ id, ...values });
 
   if (error) {
     return {
       error: "Mesajınız gönderilirken bir hata oluştu. Lütfen tekrar deneyin.",
     };
   }
+
+  after(() =>
+    notifyNewContactMessage({
+      id,
+      full_name: values.full_name,
+      email: values.email,
+      phone: values.phone,
+      subject: values.subject,
+      message: values.message,
+    }),
+  );
 
   return { success: true };
 }

@@ -1,5 +1,9 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
+import { after } from "next/server";
+
 import { createClient } from "@/lib/supabase/server";
 import { parseQuoteRequestFormData, type QuoteRequestFieldErrors } from "@/lib/public/quote-validation";
 import {
@@ -7,6 +11,7 @@ import {
   getRateLimitKey,
   isHoneypotTriggered,
 } from "@/lib/public/spam-protection";
+import { notifyNewQuoteRequest } from "@/lib/notifications/dispatch";
 
 export type QuoteRequestActionState = {
   success?: boolean;
@@ -39,13 +44,28 @@ export async function createQuoteRequestAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("quote_requests").insert(values);
+  // `id`: bkz. randevu-al/actions.ts'deki aynı açıklama — public rolün
+  // SELECT izni olmadığı için baştan üretilir.
+  const id = randomUUID();
+  const { error } = await supabase.from("quote_requests").insert({ id, ...values });
 
   if (error) {
     return {
       error: "Teklif talebiniz gönderilirken bir hata oluştu. Lütfen tekrar deneyin.",
     };
   }
+
+  after(() =>
+    notifyNewQuoteRequest({
+      id,
+      full_name: values.full_name,
+      phone: values.phone,
+      service_id: values.service_id,
+      event_date: values.event_date,
+      location: values.location,
+      message: values.message,
+    }),
+  );
 
   return { success: true };
 }
