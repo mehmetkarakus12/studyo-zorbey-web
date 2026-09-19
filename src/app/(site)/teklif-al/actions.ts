@@ -60,6 +60,7 @@ export async function createQuoteRequestAction(
       id,
       full_name: values.full_name,
       phone: values.phone,
+      email: values.email,
       service_id: values.service_id,
       event_date: values.event_date,
       location: values.location,

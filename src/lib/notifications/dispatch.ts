@@ -1,13 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { sendNotificationEmail } from "./email";
-import { sendWhatsAppNotification } from "./whatsapp";
 import {
   buildAppointmentEmail,
-  buildAppointmentWhatsAppText,
   buildContactEmail,
-  buildContactWhatsAppText,
   buildQuoteEmail,
-  buildQuoteWhatsAppText,
   type AppointmentNotificationData,
   type ContactNotificationData,
   type QuoteNotificationData,
@@ -24,7 +20,7 @@ import {
  */
 
 async function safeSend(
-  channel: "e-posta" | "WhatsApp",
+  channel: "e-posta",
   event: string,
   send: () => Promise<void>,
 ): Promise<void> {
@@ -58,16 +54,10 @@ async function dispatch(params: {
   event: string;
   subject: string;
   html: string;
-  whatsappText: string;
 }): Promise<void> {
-  await Promise.all([
-    safeSend("e-posta", params.event, () =>
-      sendNotificationEmail(params.subject, params.html),
-    ),
-    safeSend("WhatsApp", params.event, () =>
-      sendWhatsAppNotification(params.whatsappText),
-    ),
-  ]);
+  await safeSend("e-posta", params.event, () =>
+    sendNotificationEmail(params.subject, params.html),
+  );
 }
 
 export async function notifyNewAppointment(
@@ -82,8 +72,7 @@ export async function notifyNewAppointment(
     createdAt: new Date().toISOString(),
   };
   const { subject, html } = buildAppointmentEmail(payload);
-  const whatsappText = buildAppointmentWhatsAppText(payload);
-  await dispatch({ event: "randevu", subject, html, whatsappText });
+  await dispatch({ event: "randevu", subject, html });
 }
 
 export async function notifyNewQuoteRequest(
@@ -98,8 +87,7 @@ export async function notifyNewQuoteRequest(
     createdAt: new Date().toISOString(),
   };
   const { subject, html } = buildQuoteEmail(payload);
-  const whatsappText = buildQuoteWhatsAppText(payload);
-  await dispatch({ event: "teklif", subject, html, whatsappText });
+  await dispatch({ event: "teklif", subject, html });
 }
 
 export async function notifyNewContactMessage(
@@ -110,6 +98,5 @@ export async function notifyNewContactMessage(
     createdAt: new Date().toISOString(),
   };
   const { subject, html } = buildContactEmail(payload);
-  const whatsappText = buildContactWhatsAppText(payload);
-  await dispatch({ event: "iletişim mesajı", subject, html, whatsappText });
+  await dispatch({ event: "iletişim mesajı", subject, html });
 }

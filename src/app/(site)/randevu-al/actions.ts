@@ -69,9 +69,11 @@ export async function createAppointmentAction(
       id,
       full_name: values.full_name,
       phone: values.phone,
+      email: values.email,
       service_id: values.service_id,
       preferred_date: values.preferred_date,
       preferred_time: values.preferred_time,
+      message: values.message,
     }),
   );
 

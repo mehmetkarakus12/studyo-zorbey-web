@@ -10,9 +10,11 @@ export type AppointmentNotificationData = {
   id: string;
   full_name: string;
   phone: string;
+  email: string | null;
   serviceTitle: string | null;
   preferred_date: string | null;
   preferred_time: string | null;
+  message: string | null;
   createdAt: string;
 };
 
@@ -20,6 +22,7 @@ export type QuoteNotificationData = {
   id: string;
   full_name: string;
   phone: string;
+  email: string | null;
   serviceTitle: string | null;
   event_date: string | null;
   location: string | null;
@@ -117,9 +120,10 @@ export function buildAppointmentEmail(data: AppointmentNotificationData): {
   html: string;
 } {
   const rows: EmailRow[] = [
-    { label: "Müşteri", value: data.full_name },
+    { label: "Ad Soyad", value: data.full_name },
     { label: "Telefon", value: data.phone },
   ];
+  if (data.email) rows.push({ label: "E-posta", value: data.email });
   if (data.serviceTitle) rows.push({ label: "Hizmet", value: data.serviceTitle });
 
   const dateLabel = formatDateTr(data.preferred_date);
@@ -130,36 +134,17 @@ export function buildAppointmentEmail(data: AppointmentNotificationData): {
       value: timeLabel ? `${dateLabel}, ${timeLabel}` : dateLabel,
     });
   }
+  if (data.message) rows.push({ label: "Mesaj/Not", value: data.message });
   rows.push({ label: "Oluşturulma", value: formatDateTimeTr(data.createdAt) });
 
   return {
-    subject: "Yeni Randevu Talebi — Stüdyo Zorbey",
+    subject: `${siteConfig.brandName} | Yeni Randevu Talebi`,
     html: renderEmailHtml(
       "Yeni Randevu Talebi",
       rows,
       `${siteConfig.url}/admin/randevular/${data.id}`,
     ),
   };
-}
-
-export function buildAppointmentWhatsAppText(
-  data: AppointmentNotificationData,
-): string {
-  const lines = [
-    "📅 Yeni Randevu Talebi",
-    "",
-    `Müşteri: ${data.full_name}`,
-    `Telefon: ${data.phone}`,
-  ];
-  if (data.serviceTitle) lines.push(`Hizmet: ${data.serviceTitle}`);
-
-  const dateLabel = formatDateTr(data.preferred_date);
-  const timeLabel = formatTimeTr(data.preferred_time);
-  if (dateLabel) {
-    lines.push(`Tarih: ${timeLabel ? `${dateLabel}, ${timeLabel}` : dateLabel}`);
-  }
-  lines.push("", "Stüdyo Zorbey Admin Panel");
-  return lines.join("\n");
 }
 
 // --- Teklif ------------------------------------------------------------
@@ -169,9 +154,10 @@ export function buildQuoteEmail(data: QuoteNotificationData): {
   html: string;
 } {
   const rows: EmailRow[] = [
-    { label: "Müşteri", value: data.full_name },
+    { label: "Ad Soyad", value: data.full_name },
     { label: "Telefon", value: data.phone },
   ];
+  if (data.email) rows.push({ label: "E-posta", value: data.email });
   if (data.serviceTitle) rows.push({ label: "Hizmet", value: data.serviceTitle });
 
   const dateLabel = formatDateTr(data.event_date);
@@ -181,29 +167,13 @@ export function buildQuoteEmail(data: QuoteNotificationData): {
   rows.push({ label: "Oluşturulma", value: formatDateTimeTr(data.createdAt) });
 
   return {
-    subject: "Yeni Teklif Talebi — Stüdyo Zorbey",
+    subject: `${siteConfig.brandName} | Yeni Teklif Talebi`,
     html: renderEmailHtml(
       "Yeni Teklif Talebi",
       rows,
       `${siteConfig.url}/admin/teklifler/${data.id}`,
     ),
   };
-}
-
-export function buildQuoteWhatsAppText(data: QuoteNotificationData): string {
-  const lines = [
-    "📋 Yeni Teklif Talebi",
-    "",
-    `Müşteri: ${data.full_name}`,
-    `Telefon: ${data.phone}`,
-  ];
-  if (data.serviceTitle) lines.push(`Hizmet: ${data.serviceTitle}`);
-
-  const dateLabel = formatDateTr(data.event_date);
-  if (dateLabel) lines.push(`Etkinlik Tarihi: ${dateLabel}`);
-  if (data.location) lines.push(`Lokasyon: ${data.location}`);
-  lines.push("", "Stüdyo Zorbey Admin Panel");
-  return lines.join("\n");
 }
 
 // --- İletişim ------------------------------------------------------------
@@ -220,24 +190,11 @@ export function buildContactEmail(data: ContactNotificationData): {
   rows.push({ label: "Oluşturulma", value: formatDateTimeTr(data.createdAt) });
 
   return {
-    subject: "Yeni İletişim Mesajı — Stüdyo Zorbey",
+    subject: `${siteConfig.brandName} | Yeni İletişim Mesajı`,
     html: renderEmailHtml(
       "Yeni İletişim Mesajı",
       rows,
       `${siteConfig.url}/admin/mesajlar/${data.id}`,
     ),
   };
-}
-
-export function buildContactWhatsAppText(data: ContactNotificationData): string {
-  const lines = [
-    "💬 Yeni İletişim Mesajı",
-    "",
-    `Ad Soyad: ${data.full_name}`,
-    `E-posta: ${data.email}`,
-  ];
-  if (data.phone) lines.push(`Telefon: ${data.phone}`);
-  if (data.subject) lines.push(`Konu: ${data.subject}`);
-  lines.push("", "Stüdyo Zorbey Admin Panel");
-  return lines.join("\n");
 }
